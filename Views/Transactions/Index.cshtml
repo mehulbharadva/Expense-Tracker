@@ -1,0 +1,69 @@
+@model IEnumerable<ExpenseTracker.Models.Transaction>
+@{
+    ViewData["Title"] = "Transactions";
+    var selectedAccount = ViewData["SelectedAccount"];
+}
+
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-2 flex-wrap gap-3">
+        <div>
+            <h1 class="page-title">Transactions</h1>
+            <div class="title-gold-bar"></div>
+        </div>
+        <div class="d-flex align-items-center gap-3">
+            <div class="pill-switcher">
+                <a class="pill-btn @( (selectedAccount != null && (int)selectedAccount == 1) ? "active" : "" )" href="/Transactions?account=1">Personal</a>
+                <a class="pill-btn @( (selectedAccount != null && (int)selectedAccount == 2) ? "active" : "" )" href="/Transactions?account=2">Business</a>
+            </div>
+            <a class="btn-primary-theme" asp-controller="Transactions" asp-action="Create" asp-route-account="@ViewData["SelectedAccount"]">+ Add Transaction</a>
+        </div>
+    </div>
+
+    <div class="table-card">
+        <table class="table-custom">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Type</th>
+                    <th>Category</th>
+                    <th>Description</th>
+                    <th class="text-end">Amount</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model != null && Model.Any())
+                {
+                    @foreach (var t in Model)
+                    {
+                        <tr>
+                            <td>@t.TransactionDate.ToString("yyyy-MM-dd")</td>
+                            <td>
+                                <span class="badge-cat-pill" style="@(t.Type == ExpenseTracker.Models.TransactionType.Income ? "background: #DCEDE3; color: #164E3A;" : "background: #FAEAEE; color: #6E2237;")">
+                                    @t.Type
+                                </span>
+                            </td>
+                            <td>@(t.Category?.Name ?? "Uncategorized")</td>
+                            <td>@t.Description</td>
+                            <td class="text-end @(t.Type == ExpenseTracker.Models.TransactionType.Income ? "amount-income" : "amount-expense")">
+                                @(t.Type == ExpenseTracker.Models.TransactionType.Income ? "+" : "-") ₹ @(t.Amount.ToString("N2"))
+                            </td>
+                            <td class="text-end">
+                                <a class="btn-edit-theme" href="/Transactions/Edit/@t.Id">Edit</a>
+                                <a class="btn-danger-theme" href="/Transactions/Delete/@t.Id">Delete</a>
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="6" class="text-center py-4" style="color: var(--text-muted);">
+                            No transactions found for this account. Click "+ Add Transaction" to create one.
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

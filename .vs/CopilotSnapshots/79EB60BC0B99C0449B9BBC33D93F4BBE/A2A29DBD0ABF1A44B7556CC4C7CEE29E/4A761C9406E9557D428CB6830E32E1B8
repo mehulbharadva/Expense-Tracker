@@ -1,0 +1,53 @@
+﻿@{
+    ViewData["Title"] = "Dashboard";
+}
+
+<div class="container mt-4">
+    <h2>Dashboard</h2>
+
+    <div class="row mt-3">
+        <div class="col-md-4">
+            <div class="card p-3">
+                <h5>Total Income</h5>
+                <h3 class="text-success">@String.Format("{0:C}", ViewData["TotalIncome"])</h3>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card p-3">
+                <h5>Total Expense</h5>
+                <h3 class="text-danger">@String.Format("{0:C}", ViewData["TotalExpense"])</h3>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card p-3">
+                <h5>Balance</h5>
+                <h3>@String.Format("{0:C}", ViewData["Balance"])</h3>
+            </div>
+        </div>
+    </div>
+
+    <div class="mt-4">
+        <h4>Recent Transactions</h4>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Category</th>
+                    <th>Description</th>
+                    <th class="text-end">Amount</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var t in (IEnumerable<ExpenseTracker.Models.Transaction>)ViewData["RecentTransactions"])
+                {
+                    <tr>
+                        <td>@t.TransactionDate.ToString("yyyy-MM-dd")</td>
+                        <td>@t.Category?.Name</td>
+                        <td>@t.Description</td>
+                        <td class="text-end">@String.Format("{0:C}", t.Amount)</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

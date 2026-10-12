@@ -1,0 +1,34 @@
+@{
+    ViewData["Title"] = "Smart Financial Tracking";
+}
+
+<div class="container text-center" style="max-width: 860px; padding-top: 60px; padding-bottom: 60px;">
+    <div class="d-inline-flex align-items-center justify-content-center p-3 rounded-circle mb-4" style="background-color: var(--primary-green-light); color: var(--primary-green);">
+        <svg width="42" height="42" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+            <path d="m9 12 2 2 4-4"></path>
+        </svg>
+    </div>
+
+    <h1 class="page-title" style="font-size: 3.2rem; line-height: 1.15; margin-bottom: 16px;">
+        Track personal &amp; business spending with elegance.
+    </h1>
+    <div class="title-gold-bar mx-auto" style="margin-bottom: 24px; width: 64px; height: 4px;"></div>
+
+    <p style="font-size: 1.15rem; color: var(--text-muted); max-width: 600px; margin: 0 auto 36px auto; line-height: 1.6;">
+        A thoughtful expense tracker designed to give you clarity over income, outgoings, categories, and monthly budgets.
+    </p>
+
+    <div class="d-flex justify-content-center gap-3 flex-wrap">
+        @if (User?.Identity?.IsAuthenticated ?? false)
+        {
+            <a class="btn-primary-theme" asp-controller="Dashboard" asp-action="Index" style="padding: 12px 32px; font-size: 1.05rem;">Open Dashboard &rarr;</a>
+            <a class="btn-secondary-theme" asp-controller="Transactions" asp-action="Index" style="padding: 12px 28px; font-size: 1.05rem;">View Transactions</a>
+        }
+        else
+        {
+            <a class="btn-primary-theme" asp-controller="Account" asp-action="Register" style="padding: 12px 32px; font-size: 1.05rem;">Get Started Free &rarr;</a>
+            <a class="btn-secondary-theme" asp-controller="Account" asp-action="Login" style="padding: 12px 28px; font-size: 1.05rem;">Sign In</a>
+        }
+    </div>
+</div>

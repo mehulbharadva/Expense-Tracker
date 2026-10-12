@@ -1,0 +1,42 @@
+@model ExpenseTracker.Models.Category
+@{
+    ViewData["Title"] = "Edit Category";
+}
+
+<div class="container" style="max-width: 640px;">
+    <h1 class="page-title">Edit Category</h1>
+    <div class="title-gold-bar"></div>
+
+    <div class="theme-card">
+        <form asp-action="Edit" method="post">
+            <input type="hidden" asp-for="Id" />
+
+            <div class="mb-3">
+                <label asp-for="Name" class="form-label" style="font-weight: 500; font-size: 0.9rem;">Category Name</label>
+                <input asp-for="Name" class="form-control-theme" />
+                <span asp-validation-for="Name" class="text-danger" style="font-size: 0.8rem;"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Type" class="form-label" style="font-weight: 500; font-size: 0.9rem;">Type</label>
+                <select asp-for="Type" class="form-control-theme">
+                    <option value="1">Income</option>
+                    <option value="2">Expense</option>
+                </select>
+            </div>
+
+            <div class="mb-4">
+                <label asp-for="AccountType" class="form-label" style="font-weight: 500; font-size: 0.9rem;">Account</label>
+                <select asp-for="AccountType" class="form-control-theme">
+                    <option value="1">Personal</option>
+                    <option value="2">Business</option>
+                </select>
+            </div>
+
+            <div class="d-flex align-items-center gap-2">
+                <button type="submit" class="btn-primary-theme">Save Changes</button>
+                <a class="btn-secondary-theme" href="/Categories">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>

@@ -1,0 +1,98 @@
+@model ExpenseTracker.Models.Transaction
+@{
+    ViewData["Title"] = "Add Transaction";
+    var categories = ViewData["Categories"] as IEnumerable<ExpenseTracker.Models.Category> ?? Enumerable.Empty<ExpenseTracker.Models.Category>();
+}
+
+<div class="container" style="max-width: 780px;">
+    <h1 class="page-title">Add Transaction</h1>
+    <div class="title-gold-bar"></div>
+
+    <div class="theme-card">
+        <form asp-action="Create" method="post">
+            <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+            
+            <div class="row g-3 mb-3">
+                <div class="col-md-4">
+                    <label asp-for="Type" class="form-label" style="font-weight: 500; font-size: 0.9rem;">Transaction Type</label>
+                    <select asp-for="Type" class="form-control-theme" id="txType">
+                        <option value="1">Income</option>
+                        <option value="2">Expense</option>
+                    </select>
+                </div>
+
+                <div class="col-md-4">
+                    <label asp-for="AccountType" class="form-label" style="font-weight: 500; font-size: 0.9rem;">Account</label>
+                    <select asp-for="AccountType" class="form-control-theme" id="accountType">
+                        <option value="1">Personal</option>
+                        <option value="2">Business</option>
+                    </select>
+                </div>
+
+                <div class="col-md-4">
+                    <label asp-for="TransactionDate" class="form-label" style="font-weight: 500; font-size: 0.9rem;">Date</label>
+                    <input asp-for="TransactionDate" class="form-control-theme" type="date" />
+                    <span asp-validation-for="TransactionDate" class="text-danger" style="font-size: 0.8rem;"></span>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="CategoryId" class="form-label" style="font-weight: 500; font-size: 0.9rem;">Category</label>
+                <select asp-for="CategoryId" class="form-control-theme" id="categorySelect">
+                    @foreach (var c in categories)
+                    {
+                        <option value="@c.Id" data-type="@( (int)c.Type )" data-account="@( (int)c.AccountType )">@c.Name (@c.AccountType - @c.Type)</option>
+                    }
+                </select>
+                <span asp-validation-for="CategoryId" class="text-danger" style="font-size: 0.8rem;"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Amount" class="form-label" style="font-weight: 500; font-size: 0.9rem;">Amount (₹)</label>
+                <input asp-for="Amount" class="form-control-theme" placeholder="e.g. 1500.00" />
+                <span asp-validation-for="Amount" class="text-danger" style="font-size: 0.8rem;"></span>
+            </div>
+
+            <div class="mb-4">
+                <label asp-for="Description" class="form-label" style="font-weight: 500; font-size: 0.9rem;">Description</label>
+                <textarea asp-for="Description" class="form-control-theme" rows="3" placeholder="Optional notes..."></textarea>
+            </div>
+
+            <div class="d-flex align-items-center gap-2">
+                <button type="submit" class="btn-primary-theme">Save Transaction</button>
+                <a class="btn-secondary-theme" href="/Transactions">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    (function(){
+        function filterCategories(){
+            var type = document.getElementById('txType').value;
+            var account = document.getElementById('accountType').value;
+            var select = document.getElementById('categorySelect');
+            if(!select) return;
+            for (var i=0;i<select.options.length;i++){
+                var opt = select.options[i];
+                var otype = opt.getAttribute('data-type');
+                var oacct = opt.getAttribute('data-account');
+                if (otype === type && oacct === account){
+                    opt.style.display = '';
+                } else {
+                    opt.style.display = 'none';
+                }
+            }
+            for (var j=0;j<select.options.length;j++){
+                if (select.options[j].style.display !== 'none'){
+                    select.selectedIndex = j; break;
+                }
+            }
+        }
+        var elType = document.getElementById('txType');
+        var elAccount = document.getElementById('accountType');
+        if(elType) elType.addEventListener('change', filterCategories);
+        if(elAccount) elAccount.addEventListener('change', filterCategories);
+        filterCategories();
+    })();
+</script>

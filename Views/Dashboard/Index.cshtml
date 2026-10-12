@@ -1,0 +1,244 @@
+@model ExpenseTracker.Models.DashboardViewModel
+@using ExpenseTracker.Models
+@{
+    ViewData["Title"] = "Dashboard";
+    var accountName = Model.SelectedAccount == AccountType.Personal ? "personal" : "business";
+}
+
+<div class="container">
+    <!-- Page Header matching reference -->
+    <h1 class="page-title">Dashboard</h1>
+    <div class="title-gold-bar"></div>
+
+    <!-- Top 3 Metric Summary Cards -->
+    <div class="metric-grid">
+        <!-- Card 1: Total income -->
+        <div class="metric-card accent-income">
+            <div class="metric-label">Total income</div>
+            <div class="metric-value val-income">₹ @Model.TotalIncome.ToString("N2")</div>
+            @if (Model.HasPriorIncome)
+            {
+                <div class="metric-trend @(Model.IncomeTrendPct >= 0 ? "trend-positive" : "trend-neutral")">
+                    @(Model.IncomeTrendPct >= 0 ? "▲" : "▼") @(Math.Abs(Model.IncomeTrendPct))% vs last month
+                </div>
+            }
+            else if (Model.ThisMonthIncome > 0)
+            {
+                <div class="metric-trend trend-positive">
+                    ▲ ₹ @Model.ThisMonthIncome.ToString("N2") this month
+                </div>
+            }
+            else
+            {
+                <div class="metric-trend trend-neutral">
+                    @(Model.TotalIncome > 0 ? "— income tracked" : "— no income yet")
+                </div>
+            }
+        </div>
+
+        <!-- Card 2: Total expense -->
+        <div class="metric-card accent-expense">
+            <div class="metric-label">Total expense</div>
+            <div class="metric-value val-expense">₹ @Model.TotalExpense.ToString("N2")</div>
+            @if (Model.HasPriorExpense)
+            {
+                <div class="metric-trend @(Model.ExpenseTrendPct <= 0 ? "trend-positive" : "trend-neutral")">
+                    @(Model.ExpenseTrendPct >= 0 ? "▲" : "▼") @(Math.Abs(Model.ExpenseTrendPct))% vs last month
+                </div>
+            }
+            else
+            {
+                <div class="metric-trend trend-neutral">
+                    @(Model.TotalExpense > 0 ? "— spend tracked" : "— no spend yet")
+                </div>
+            }
+        </div>
+
+        <!-- Card 3: Balance -->
+        <div class="metric-card accent-balance">
+            <div class="metric-label">Balance</div>
+            <div class="metric-value val-balance">₹ @Model.Balance.ToString("N2")</div>
+            <div class="metric-trend @(Model.Balance >= 0 ? "trend-positive" : "trend-neutral")">
+                @(Model.Balance >= 0 ? "▲ net positive" : "▼ net negative")
+            </div>
+        </div>
+    </div>
+
+    <!-- Account Switcher Pill Row -->
+    <div class="filter-row">
+        <div class="pill-switcher">
+            <a class="pill-btn @(Model.SelectedAccount == AccountType.Personal ? "active" : "")" href="/Dashboard?account=1">Personal</a>
+            <a class="pill-btn @(Model.SelectedAccount == AccountType.Business ? "active" : "")" href="/Dashboard?account=2">Business</a>
+        </div>
+        <div class="filter-note">
+            Showing @accountName account overview
+        </div>
+    </div>
+
+    <!-- Charts (Income vs expense & Where the money goes) -->
+    <div class="chart-grid">
+        <!-- Income vs Expense Bar Chart -->
+        <div class="theme-card">
+            <div class="card-title-serif">Income vs expense</div>
+            <div class="card-subtitle">Each month: green bar is what came in, red bar is what went out</div>
+
+            <div class="chart-legend">
+                <div class="legend-item">
+                    <span class="legend-dot income-dot"></span>
+                    <span>Income</span>
+                </div>
+                <div class="legend-item">
+                    <span class="legend-dot expense-dot"></span>
+                    <span>Expense</span>
+                </div>
+            </div>
+
+            <div class="bar-chart-container">
+                @if (Model.HasMonthlyData)
+                {
+                    <div class="bar-chart-stage">
+                        <div class="y-axis-labels">
+                            <span>@DashboardViewModel.FormatShort(Model.YCeiling)</span>
+                            <span>@DashboardViewModel.FormatShort(Model.YCeiling * 2m / 3m)</span>
+                            <span>@DashboardViewModel.FormatShort(Model.YCeiling / 3m)</span>
+                            <span>0</span>
+                        </div>
+
+                        <!-- Faint horizontal grid lines -->
+                        <div class="grid-line" style="top: 0%;"></div>
+                        <div class="grid-line" style="top: 33.3%;"></div>
+                        <div class="grid-line" style="top: 66.6%;"></div>
+                        <div class="grid-line" style="top: 100%;"></div>
+
+                        @foreach (var m in Model.MonthlyData)
+                        {
+                            <div class="month-col-group">
+                                <div class="month-bars">
+                                    <div class="chart-bar-wrap" title="Income: ₹ @m.Income.ToString("N2")">
+                                        <span class="bar-val-label">@(m.Income > 0 ? DashboardViewModel.FormatShort(m.Income) : "")</span>
+                                        <div class="chart-bar bar-income" style="height: @(m.IncomeBarHeight)px;"></div>
+                                    </div>
+                                    <div class="chart-bar-wrap" title="Expense: ₹ @m.Expense.ToString("N2")">
+                                        <span class="bar-val-label">@(m.Expense > 0 ? DashboardViewModel.FormatShort(m.Expense) : "")</span>
+                                        <div class="chart-bar bar-expense" style="height: @(m.ExpenseBarHeight)px;"></div>
+                                    </div>
+                                </div>
+                                <span class="month-axis-label">@m.MonthLabel</span>
+                            </div>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <div class="d-flex flex-column align-items-center justify-content-center text-center" style="height: 190px; color: var(--text-muted); border-bottom: 1px solid #EADBCA;">
+                        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="mb-2" style="opacity: 0.5;">
+                            <rect x="3" y="3" width="18" height="18" rx="2"></rect>
+                            <line x1="3" y1="9" x2="21" y2="9"></line>
+                            <line x1="9" y1="21" x2="9" y2="9"></line>
+                        </svg>
+                        <span style="font-weight: 500; font-size: 0.95rem;">No transaction data yet</span>
+                        <span style="font-size: 0.8rem; opacity: 0.8;">Income and expenses will appear here once recorded.</span>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- Where the money goes Donut Chart -->
+        <div class="theme-card">
+            <div class="card-title-serif">Where the money goes</div>
+            <div class="card-subtitle">Share of spending by category</div>
+
+            @if (Model.CategoryExpenses.Any() && Model.TotalExpense > 0)
+            {
+                <div class="donut-layout">
+                    <!-- SVG Donut Chart -->
+                    <div class="donut-graphic-wrap">
+                        <svg width="170" height="170" viewBox="0 0 170 170" style="transform: rotate(-90deg);">
+                            @foreach (var cat in Model.CategoryExpenses)
+                            {
+                                var segmentStr = cat.SegmentLength.ToString("F2", System.Globalization.CultureInfo.InvariantCulture);
+                                var remStr = Math.Max(0, 389.56 - cat.SegmentLength).ToString("F2", System.Globalization.CultureInfo.InvariantCulture);
+                                var offsetStr = cat.StrokeOffset.ToString("F2", System.Globalization.CultureInfo.InvariantCulture);
+                                <circle cx="85" cy="85" r="62" fill="transparent" stroke="@cat.Color" stroke-width="24"
+                                        stroke-dasharray="@segmentStr @remStr" stroke-dashoffset="@offsetStr"></circle>
+                            }
+                        </svg>
+
+                        <div class="donut-center-info">
+                            <span class="donut-center-label">Total spent</span>
+                            <span class="donut-center-total">₹ @Model.TotalExpense.ToString("N0")</span>
+                        </div>
+                    </div>
+
+                    <!-- Breakdown list matching reference -->
+                    <div class="donut-legend-list">
+                        @foreach (var cat in Model.CategoryExpenses)
+                        {
+                            <div class="donut-legend-row">
+                                <div class="donut-cat-left">
+                                    <span class="cat-color-dot" style="background-color: @cat.Color;"></span>
+                                    <span>@cat.CategoryName</span>
+                                </div>
+                                <div class="donut-cat-right">₹ @cat.Amount.ToString("N0") &middot; @cat.Percentage%</div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="d-flex flex-column align-items-center justify-content-center text-center" style="min-height: 220px; color: var(--text-muted);">
+                    <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="mb-2" style="opacity: 0.5;">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <path d="M12 6v6l4 2"></path>
+                    </svg>
+                    <span style="font-weight: 500; font-size: 0.95rem;">No expense data yet</span>
+                    <span style="font-size: 0.8rem; opacity: 0.8;">Your category breakdown will show here when you record expenses.</span>
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- Recent Transactions Table -->
+    <div class="mt-4">
+        <h2 class="section-title">Recent @accountName transactions</h2>
+        <div class="table-card">
+            <table class="table-custom">
+                <thead>
+                    <tr>
+                        <th style="width: 22%;">Date</th>
+                        <th style="width: 20%;">Category</th>
+                        <th style="width: 38%;">Description</th>
+                        <th style="width: 20%;" class="text-end">Amount</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.RecentTransactions.Any())
+                    {
+                        @foreach (var t in Model.RecentTransactions)
+                        {
+                            <tr>
+                                <td>@t.TransactionDate.ToString("yyyy-MM-dd")</td>
+                                <td>
+                                    <span class="badge-cat-pill">@(t.Category?.Name ?? "General")</span>
+                                </td>
+                                <td>@(string.IsNullOrWhiteSpace(t.Description) ? "—" : t.Description)</td>
+                                <td class="text-end @(t.Type == TransactionType.Income ? "amount-income" : "amount-expense")">
+                                    @(t.Type == TransactionType.Income ? "+" : "-") ₹ @(t.Amount.ToString("N2"))
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="4" class="text-center py-4" style="color: var(--text-muted);">
+                                No recent @(accountName) transactions found.
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,76 @@
+using ExpenseTracker.Models;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
+
+namespace ExpenseTracker.Data
+{
+    // Use IdentityDbContext so ASP.NET Core Identity tables can be stored via EF Core (using Pomelo/MySQL)
+    public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
+    {
+        public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
+        {
+        }
+
+        public DbSet<Transaction> Transactions { get; set; }
+        public DbSet<Category> Categories { get; set; }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
+            // Prevent deleting a category from deleting its transactions
+            modelBuilder.Entity<Transaction>()
+                .HasOne(t => t.Category)
+                .WithMany()
+                .HasForeignKey(t => t.CategoryId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Seed default categories (system-wide; UserId = null)
+            modelBuilder.Entity<Category>().HasData(
+                // Personal - Expense
+                new Category { Id = 1, Name = "Food", Type = TransactionType.Expense, AccountType = AccountType.Personal, IsDefault = true, UserId = null },
+                new Category { Id = 2, Name = "Shopping", Type = TransactionType.Expense, AccountType = AccountType.Personal, IsDefault = true, UserId = null },
+                new Category { Id = 3, Name = "Transport", Type = TransactionType.Expense, AccountType = AccountType.Personal, IsDefault = true, UserId = null },
+                new Category { Id = 4, Name = "Bills", Type = TransactionType.Expense, AccountType = AccountType.Personal, IsDefault = true, UserId = null },
+                new Category { Id = 5, Name = "Entertainment", Type = TransactionType.Expense, AccountType = AccountType.Personal, IsDefault = true, UserId = null },
+                new Category { Id = 6, Name = "Education", Type = TransactionType.Expense, AccountType = AccountType.Personal, IsDefault = true, UserId = null },
+                new Category { Id = 7, Name = "Health", Type = TransactionType.Expense, AccountType = AccountType.Personal, IsDefault = true, UserId = null },
+                new Category { Id = 8, Name = "Other", Type = TransactionType.Expense, AccountType = AccountType.Personal, IsDefault = true, UserId = null },
+
+                // Personal - Income
+                new Category { Id = 9, Name = "Salary", Type = TransactionType.Income, AccountType = AccountType.Personal, IsDefault = true, UserId = null },
+                new Category { Id = 10, Name = "Freelance", Type = TransactionType.Income, AccountType = AccountType.Personal, IsDefault = true, UserId = null },
+                new Category { Id = 11, Name = "Investment", Type = TransactionType.Income, AccountType = AccountType.Personal, IsDefault = true, UserId = null },
+                new Category { Id = 12, Name = "Interest", Type = TransactionType.Income, AccountType = AccountType.Personal, IsDefault = true, UserId = null },
+                new Category { Id = 13, Name = "Gift", Type = TransactionType.Income, AccountType = AccountType.Personal, IsDefault = true, UserId = null },
+                new Category { Id = 14, Name = "Other", Type = TransactionType.Income, AccountType = AccountType.Personal, IsDefault = true, UserId = null },
+
+                // Business - Expense
+                new Category { Id = 15, Name = "Office", Type = TransactionType.Expense, AccountType = AccountType.Business, IsDefault = true, UserId = null },
+                new Category { Id = 16, Name = "Employee Salary", Type = TransactionType.Expense, AccountType = AccountType.Business, IsDefault = true, UserId = null },
+                new Category { Id = 17, Name = "Marketing", Type = TransactionType.Expense, AccountType = AccountType.Business, IsDefault = true, UserId = null },
+                new Category { Id = 18, Name = "Travel", Type = TransactionType.Expense, AccountType = AccountType.Business, IsDefault = true, UserId = null },
+                new Category { Id = 19, Name = "Equipment", Type = TransactionType.Expense, AccountType = AccountType.Business, IsDefault = true, UserId = null },
+                new Category { Id = 20, Name = "Rent", Type = TransactionType.Expense, AccountType = AccountType.Business, IsDefault = true, UserId = null },
+                new Category { Id = 21, Name = "Software", Type = TransactionType.Expense, AccountType = AccountType.Business, IsDefault = true, UserId = null },
+                new Category { Id = 22, Name = "Utilities", Type = TransactionType.Expense, AccountType = AccountType.Business, IsDefault = true, UserId = null },
+                new Category { Id = 23, Name = "Other", Type = TransactionType.Expense, AccountType = AccountType.Business, IsDefault = true, UserId = null },
+
+                // Business - Income
+                new Category { Id = 24, Name = "Sales", Type = TransactionType.Income, AccountType = AccountType.Business, IsDefault = true, UserId = null },
+                new Category { Id = 25, Name = "Services", Type = TransactionType.Income, AccountType = AccountType.Business, IsDefault = true, UserId = null },
+                new Category { Id = 26, Name = "Client Payment", Type = TransactionType.Income, AccountType = AccountType.Business, IsDefault = true, UserId = null },
+                new Category { Id = 27, Name = "Investment", Type = TransactionType.Income, AccountType = AccountType.Business, IsDefault = true, UserId = null },
+                new Category { Id = 28, Name = "Other", Type = TransactionType.Income, AccountType = AccountType.Business, IsDefault = true, UserId = null }
+            );
+
+            // Configure relationship: Transaction -> Category
+            // - Transaction.CategoryId is required
+            // - Deleting a Category must NOT delete Transactions (Restrict)
+            modelBuilder.Entity<Transaction>()
+                .HasOne(t => t.Category)
+                .WithMany()
+                .HasForeignKey(t => t.CategoryId)
+                .OnDelete(DeleteBehavior.Restrict);
+        }
+    }
+}

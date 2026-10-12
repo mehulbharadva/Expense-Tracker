@@ -1,0 +1,41 @@
+﻿@model IEnumerable<ExpenseTracker.Models.Category>
+@{
+    ViewData["Title"] = "Categories";
+}
+
+<div class="container mt-4">
+    <h2>Your Categories</h2>
+    <div class="mb-2">
+        <a class="btn btn-primary" href="/Categories/Create">Add Category</a>
+    </div>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Type</th>
+                <th>Account</th>
+                <th>Default</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var c in Model)
+            {
+                <tr>
+                    <td>@c.Name</td>
+                    <td>@c.Type</td>
+                    <td>@c.AccountType</td>
+                    <td>@(c.IsDefault ? "Yes" : "No")</td>
+                    <td>
+                        @if (!c.IsDefault)
+                        {
+                            <a class="btn btn-sm btn-secondary" href="/Categories/Edit/@c.Id">Edit</a>
+                            <a class="btn btn-sm btn-danger" href="/Categories/Delete/@c.Id">Delete</a>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

@@ -1,0 +1,49 @@
+﻿@model IEnumerable<ExpenseTracker.Models.Transaction>
+@{
+    ViewData["Title"] = "Transactions";
+    var categories = ViewData["Categories"] as IEnumerable<ExpenseTracker.Models.Category>;
+}
+
+<div class="container mt-4">
+    <h2>Transactions</h2>
+    <div class="d-flex justify-content-between align-items-center mb-2">
+        <div>
+            <a class="btn btn-link @( (ViewData["SelectedAccount"] != null && (int)ViewData["SelectedAccount"] == 1) ? "fw-bold" : "" )" href="/Transactions?account=1">Personal</a>
+            |
+            <a class="btn btn-link @( (ViewData["SelectedAccount"] != null && (int)ViewData["SelectedAccount"] == 2) ? "fw-bold" : "" )" href="/Transactions?account=2">Business</a>
+        </div>
+
+        <div>
+            <a class="btn btn-primary" asp-controller="Transactions" asp-action="Create" asp-route-account="@ViewData["SelectedAccount"]">Add Transaction</a>
+        </div>
+    </div>
+
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Type</th>
+                <th>Category</th>
+                <th>Description</th>
+                <th class="text-end">Amount</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var t in Model)
+            {
+                <tr>
+                    <td>@t.TransactionDate.ToString("yyyy-MM-dd")</td>
+                    <td>@t.Type</td>
+                    <td>@t.Category?.Name</td>
+                    <td>@t.Description</td>
+                    <td class="text-end">@String.Format("{0:C}", t.Amount)</td>
+                    <td>
+                        <a class="btn btn-sm btn-secondary" href="/Transactions/Edit/@t.Id">Edit</a>
+                        <a class="btn btn-sm btn-danger" href="/Transactions/Delete/@t.Id">Delete</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

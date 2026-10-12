@@ -1,0 +1,158 @@
+﻿@{
+    ViewData["Title"] = "Dashboard";
+    var months = ViewData["ChartMonths"];
+}
+
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h2 class="mb-0">Good day</h2>
+            <div class="text-muted">Overview of your selected account</div>
+        </div>
+
+        <div class="d-flex align-items-center">
+            <a class="btn btn-link @( (ViewData["SelectedAccount"] != null && (int)ViewData["SelectedAccount"] == 1) ? "fw-bold text-white" : "text-muted" )" href="/Dashboard?account=1">Personal</a>
+            <span class="mx-1 text-muted">|</span>
+            <a class="btn btn-link @( (ViewData["SelectedAccount"] != null && (int)ViewData["SelectedAccount"] == 2) ? "fw-bold text-white" : "text-muted" )" href="/Dashboard?account=2">Business</a>
+        </div>
+    </div>
+
+    <div class="et-cards et-summary mb-4">
+        <div class="et-card" style="flex:1">
+            <div class="d-flex justify-content-between">
+                <div>
+                    <div class="label">Total Income</div>
+                    <div class="amount income">@String.Format("{0:C}", ViewData["TotalIncome"])</div>
+                </div>
+                <div class="align-self-center">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 2L12 22" stroke="white" stroke-opacity="0.2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </div>
+            </div>
+        </div>
+
+        <div class="et-card" style="flex:1">
+            <div class="d-flex justify-content-between">
+                <div>
+                    <div class="label">Total Expense</div>
+                    <div class="amount expense">@String.Format("{0:C}", ViewData["TotalExpense"])</div>
+                </div>
+                <div class="align-self-center">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 22L12 2" stroke="white" stroke-opacity="0.2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </div>
+            </div>
+        </div>
+
+        <div class="et-card" style="flex:1">
+            <div class="d-flex justify-content-between">
+                <div>
+                    <div class="label">Balance</div>
+                    <div class="amount balance">@String.Format("{0:C}", ViewData["Balance"])</div>
+                </div>
+                <div class="align-self-center">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="10" stroke="white" stroke-opacity="0.05"/></svg>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="et-card mb-4">
+                <h5>Income vs Expense</h5>
+                <canvas id="chartIncomeExpense" height="120"></canvas>
+            </div>
+
+            <div class="et-card">
+                <h5>Spending by Category</h5>
+                <canvas id="chartByCategory" height="120"></canvas>
+            </div>
+
+            <div class="et-card mt-4">
+                <h5>Recent Transactions</h5>
+                <table class="et-table w-100">
+                    <thead>
+                        <tr><th>Date</th><th>Type</th><th>Category</th><th>Description</th><th class="text-end">Amount</th><th></th></tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var t in (IEnumerable<ExpenseTracker.Models.Transaction>)ViewData["RecentTransactions"])
+                        {
+                            <tr>
+                                <td>@t.TransactionDate.ToString("yyyy-MM-dd")</td>
+                                <td>@t.Type</td>
+                                <td>@t.Category?.Name</td>
+                                <td>@t.Description</td>
+                                <td class="text-end amount @(t.Type == ExpenseTracker.Models.TransactionType.Income ? "et-amount-income" : "et-amount-expense")">@String.Format("{0:C}", t.Amount)</td>
+                                <td class="text-end"><a class="btn btn-sm btn-secondary" href="/Transactions/Edit/@t.Id">Edit</a></td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="et-card mb-3">
+                <h6>Quick Actions</h6>
+                <div class="et-actions mt-2">
+                    <a class="et-action-btn" asp-controller="Transactions" asp-action="Create" asp-route-account="@((int)ViewData["SelectedAccount"])">+ Add Transaction</a>
+                    <a class="et-action-btn" asp-controller="Categories" asp-action="Create">+ Add Category</a>
+                    <a class="et-action-btn" asp-controller="Transactions" asp-action="Index">View All Transactions</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts{
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        (function(){
+            var months = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(ViewData["ChartMonths"] ?? new List<string>()));
+            var income = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(ViewData["IncomeSeries"] ?? new List<decimal>()));
+            var expense = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(ViewData["ExpenseSeries"] ?? new List<decimal>()));
+            var catLabels = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(ViewData["CategoryLabels"] ?? new List<string>()));
+            var catData = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(ViewData["CategorySeries"] ?? new List<decimal>()));
+
+            function createLineChart(ctx, labels, inc, exp){
+                return new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [
+                            { label: 'Income', data: inc, borderColor: 'rgba(63,191,160,1)', backgroundColor: 'rgba(63,191,160,0.12)', tension:0.3, fill:true },
+                            { label: 'Expense', data: exp, borderColor: 'rgba(255,107,154,1)', backgroundColor: 'rgba(255,107,154,0.08)', tension:0.3, fill:true }
+                        ]
+                    },
+                    options: {
+                        plugins: {
+                            legend: { labels: { color: '#9aa0ac' } }
+                        },
+                        scales: {
+                            x: { ticks: { color: '#9aa0ac' } },
+                            y: { ticks: { color: '#9aa0ac' } }
+                        },
+                        maintainAspectRatio: false
+                    }
+                });
+            }
+
+            var ctxIE = document.getElementById('chartIncomeExpense')?.getContext('2d');
+            if (ctxIE) createLineChart(ctxIE, months, income, expense);
+
+            var catCtx = document.getElementById('chartByCategory')?.getContext('2d');
+            if (catCtx) {
+                new Chart(catCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: catLabels,
+                        datasets: [{ data: catData, backgroundColor: ['#3fbfa0','#ff6b9a','#7aa2ff','#ffd36b','#b79bff'] }]
+                    },
+                    options: {
+                        plugins: { legend: { labels: { color: '#9aa0ac' } } },
+                        maintainAspectRatio: false
+                    }
+                });
+            }
+        })();
+    </script>
+}

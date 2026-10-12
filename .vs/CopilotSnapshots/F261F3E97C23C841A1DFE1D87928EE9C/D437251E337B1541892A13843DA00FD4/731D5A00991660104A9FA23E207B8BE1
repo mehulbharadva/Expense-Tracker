@@ -1,0 +1,175 @@
+﻿using ExpenseTracker.Data;
+using ExpenseTracker.Models;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
+
+namespace ExpenseTracker.Controllers
+{
+    [Authorize]
+    public class TransactionsController : Controller
+    {
+        private readonly ApplicationDbContext _db;
+
+        public TransactionsController(ApplicationDbContext db)
+        {
+            _db = db;
+        }
+
+        // GET: Transactions
+        public async Task<IActionResult> Index(int? type, int? account, int? categoryId)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var query = _db.Transactions.Include(t => t.Category).Where(t => t.UserId == userId).AsQueryable();
+
+            if (type.HasValue)
+            {
+                var txType = (TransactionType)type.Value;
+                query = query.Where(t => t.Type == txType);
+            }
+
+            if (account.HasValue)
+            {
+                var acc = (AccountType)account.Value;
+                query = query.Where(t => t.AccountType == acc);
+            }
+
+            if (categoryId.HasValue)
+            {
+                query = query.Where(t => t.CategoryId == categoryId.Value);
+            }
+
+            var list = await query.OrderByDescending(t => t.TransactionDate).ToListAsync();
+            ViewData["Categories"] = await _db.Categories.Where(c => c.IsDefault || c.UserId == userId).OrderBy(c => c.Name).ToListAsync();
+            return View(list);
+        }
+
+        // GET: Transactions/Create
+        public async Task<IActionResult> Create()
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            ViewData["Categories"] = await _db.Categories.Where(c => c.IsDefault || c.UserId == userId).OrderBy(c => c.Name).ToListAsync();
+            return View();
+        }
+
+        // POST: Transactions/Create
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Create([Bind("Amount,Type,AccountType,CategoryId,Description,TransactionDate")] Transaction transaction)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (ModelState.IsValid)
+            {
+                // Validate that the selected category is allowed (default or belongs to user) and matches type & account
+                var category = await _db.Categories.FindAsync(transaction.CategoryId);
+                if (category == null || (!(category.IsDefault) && category.UserId != userId) || category.Type != transaction.Type || category.AccountType != transaction.AccountType)
+                {
+                    ModelState.AddModelError(string.Empty, "Invalid category selection.");
+                }
+            }
+
+            if (!ModelState.IsValid)
+            {
+                ViewData["Categories"] = await _db.Categories.Where(c => c.IsDefault || c.UserId == userId).OrderBy(c => c.Name).ToListAsync();
+                return View(transaction);
+            }
+
+            transaction.CreatedAt = DateTime.UtcNow;
+            transaction.UserId = userId;
+            _db.Add(transaction);
+            await _db.SaveChangesAsync();
+            return RedirectToAction(nameof(Index));
+        }
+
+        // GET: Transactions/Edit/5
+        public async Task<IActionResult> Edit(int? id)
+        {
+            if (id == null) return NotFound();
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            var transaction = await _db.Transactions.FindAsync(id);
+            if (transaction == null) return NotFound();
+            if (transaction.UserId != userId) return Forbid();
+
+            ViewData["Categories"] = await _db.Categories.Where(c => c.IsDefault || c.UserId == userId).OrderBy(c => c.Name).ToListAsync();
+            return View(transaction);
+        }
+
+        // POST: Transactions/Edit/5
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Amount,Type,AccountType,CategoryId,Description,TransactionDate,CreatedAt")] Transaction transaction)
+        {
+            if (id != transaction.Id) return NotFound();
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (ModelState.IsValid)
+            {
+                var existing = await _db.Transactions.AsNoTracking().FirstOrDefaultAsync(t => t.Id == id);
+                if (existing == null) return NotFound();
+                if (existing.UserId != userId) return Forbid();
+
+                // Validate category
+                var category = await _db.Categories.FindAsync(transaction.CategoryId);
+                if (category == null || (!(category.IsDefault) && category.UserId != userId) || category.Type != transaction.Type || category.AccountType != transaction.AccountType)
+                {
+                    ModelState.AddModelError(string.Empty, "Invalid category selection.");
+                    ViewData["Categories"] = await _db.Categories.Where(c => c.IsDefault || c.UserId == userId).OrderBy(c => c.Name).ToListAsync();
+                    return View(transaction);
+                }
+
+                try
+                {
+                    transaction.UserId = userId;
+                    _db.Update(transaction);
+                    await _db.SaveChangesAsync();
+                }
+                catch (DbUpdateConcurrencyException)
+                {
+                    if (!TransactionExists(transaction.Id)) return NotFound();
+                    throw;
+                }
+
+                return RedirectToAction(nameof(Index));
+            }
+
+            ViewData["Categories"] = await _db.Categories.Where(c => c.IsDefault || c.UserId == userId).OrderBy(c => c.Name).ToListAsync();
+            return View(transaction);
+        }
+
+        // GET: Transactions/Delete/5
+        public async Task<IActionResult> Delete(int? id)
+        {
+            if (id == null) return NotFound();
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            var transaction = await _db.Transactions.Include(t => t.Category).FirstOrDefaultAsync(m => m.Id == id && m.UserId == userId);
+            if (transaction == null) return NotFound();
+
+            return View(transaction);
+        }
+
+        // POST: Transactions/Delete/5
+        [HttpPost, ActionName("Delete")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteConfirmed(int id)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var transaction = await _db.Transactions.FirstOrDefaultAsync(t => t.Id == id && t.UserId == userId);
+            if (transaction != null)
+            {
+                _db.Transactions.Remove(transaction);
+                await _db.SaveChangesAsync();
+            }
+
+            return RedirectToAction(nameof(Index));
+        }
+
+        private bool TransactionExists(int id)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            return _db.Transactions.Any(e => e.Id == id && e.UserId == userId);
+        }
+    }
+}

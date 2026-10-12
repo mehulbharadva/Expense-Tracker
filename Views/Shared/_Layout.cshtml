@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - ExpenseTracker</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;0,700;0,800;1,600&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/ExpenseTracker.styles.css" asp-append-version="true" />
+</head>
+<body>
+    @{
+        var currentController = ViewContext.RouteData.Values["Controller"]?.ToString();
+        var currentAction = ViewContext.RouteData.Values["Action"]?.ToString();
+    }
+
+    <!-- Top Navigation Bar matching reference -->
+    <header class="app-navbar">
+        <div class="container d-flex align-items-center justify-content-between">
+            <!-- Brand -->
+            <a class="navbar-brand-wrap" asp-area="" asp-controller="Dashboard" asp-action="Index">
+                <span class="brand-icon" aria-hidden="true">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                        <path d="m9 12 2 2 4-4"></path>
+                    </svg>
+                </span>
+                <span class="brand-text">ExpenseTracker</span>
+            </a>
+
+            <!-- Navigation Links -->
+            <nav class="nav-links-wrap d-none d-md-flex">
+                <a class="nav-item-link @(currentController == "Home" && currentAction == "Index" ? "active" : "")" asp-controller="Home" asp-action="Index">Home</a>
+                <a class="nav-item-link @(currentController == "Home" && currentAction == "Privacy" ? "active" : "")" asp-controller="Home" asp-action="Privacy">Privacy</a>
+                <a class="nav-item-link @(currentController == "Dashboard" ? "active" : "")" asp-controller="Dashboard" asp-action="Index">Dashboard</a>
+                <a class="nav-item-link @(currentController == "Transactions" ? "active" : "")" asp-controller="Transactions" asp-action="Index">Transactions</a>
+                <a class="nav-item-link @(currentController == "Categories" ? "active" : "")" asp-controller="Categories" asp-action="Index">Categories</a>
+                <a class="nav-item-link @(currentController == "Reports" ? "active" : "")" asp-controller="Reports" asp-action="Index">Reports</a>
+            </nav>
+
+            <!-- User Auth Section -->
+            <div class="nav-user-wrap">
+                @if (User?.Identity?.IsAuthenticated ?? false)
+                {
+                    <span class="nav-user-greeting">Hello, @(User.Identity.Name)</span>
+                    <form asp-controller="Account" asp-action="Logout" method="post" class="d-inline m-0 p-0">
+                        <button type="submit" class="nav-logout-btn">Logout</button>
+                    </form>
+                }
+                else
+                {
+                    <a class="nav-item-link @(currentController == "Account" && currentAction == "Login" ? "active" : "")" asp-controller="Account" asp-action="Login">Login</a>
+                    <a class="nav-item-link @(currentController == "Account" && currentAction == "Register" ? "active" : "")" asp-controller="Account" asp-action="Register">Register</a>
+                }
+            </div>
+        </div>
+
+        <!-- Mobile Navigation Row -->
+        <div class="container d-flex d-md-none pt-2 justify-content-center gap-3">
+            <a class="nav-item-link @(currentController == "Dashboard" ? "active" : "")" asp-controller="Dashboard" asp-action="Index">Dashboard</a>
+            <a class="nav-item-link @(currentController == "Transactions" ? "active" : "")" asp-controller="Transactions" asp-action="Index">Transactions</a>
+            <a class="nav-item-link @(currentController == "Categories" ? "active" : "")" asp-controller="Categories" asp-action="Index">Categories</a>
+            <a class="nav-item-link @(currentController == "Reports" ? "active" : "")" asp-controller="Reports" asp-action="Index">Reports</a>
+        </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main role="main" class="main-content">
+        @RenderBody()
+    </main>
+
+    <!-- Professional Website Branding Footer -->
+    <footer class="app-footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-brand-section">
+                    <div class="footer-brand">
+                        <span class="brand-icon" aria-hidden="true">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                                <path d="m9 12 2 2 4-4"></path>
+                            </svg>
+                        </span>
+                        <span class="footer-brand-name">ExpenseTracker</span>
+                    </div>
+                    <div class="footer-creator">
+                        Created by <span class="creator-name">Mehul Bharadva</span>
+                    </div>
+                    <p class="footer-tagline">
+                        Thoughtful financial management &amp; reporting for personal and business clarity.
+                    </p>
+                </div>
+
+                <div class="footer-links-section">
+                    <div class="footer-nav-title">Quick Links</div>
+                    <div class="footer-nav-links">
+                        <a asp-controller="Dashboard" asp-action="Index">Dashboard</a>
+                        <a asp-controller="Transactions" asp-action="Index">Transactions</a>
+                        <a asp-controller="Categories" asp-action="Index">Categories</a>
+                        <a asp-controller="Reports" asp-action="Index">Reports</a>
+                        <a asp-controller="Home" asp-action="Privacy">Privacy Policy</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="footer-bottom-bar">
+                <div>&copy; @DateTime.Now.Year ExpenseTracker. All rights reserved.</div>
+                <div>Created by Mehul Bharadva &bull; Personal &amp; Business Accounting</div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

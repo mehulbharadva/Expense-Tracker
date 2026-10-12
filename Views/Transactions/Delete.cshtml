@@ -1,0 +1,25 @@
+@model ExpenseTracker.Models.Transaction
+@{
+    ViewData["Title"] = "Delete Transaction";
+}
+
+<div class="container mt-4">
+    <h2>Delete Transaction</h2>
+    <div class="alert alert-warning">Are you sure you want to delete this transaction?</div>
+    <dl class="row">
+        <dt class="col-sm-3">Date</dt>
+        <dd class="col-sm-9">@Model.TransactionDate.ToString("yyyy-MM-dd")</dd>
+
+        <dt class="col-sm-3">Category</dt>
+        <dd class="col-sm-9">@Model.Category?.Name</dd>
+
+        <dt class="col-sm-3">Amount</dt>
+        <dd class="col-sm-9">@String.Format("{0:C}", Model.Amount)</dd>
+    </dl>
+
+    <form asp-action="Delete" method="post">
+        <input type="hidden" asp-for="Id" />
+        <button type="submit" class="btn btn-danger">Delete</button>
+        <a class="btn btn-secondary" href="/Transactions">Cancel</a>
+    </form>
+</div>

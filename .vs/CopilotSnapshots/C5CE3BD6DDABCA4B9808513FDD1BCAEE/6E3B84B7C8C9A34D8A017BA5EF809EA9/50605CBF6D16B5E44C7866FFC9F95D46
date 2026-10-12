@@ -1,0 +1,109 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - ExpenseTracker</title>
+    <script type="importmap"></script>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/ExpenseTracker.styles.css" asp-append-version="true" />
+</head>
+<body>
+    <div class="app-shell">
+        <aside class="app-sidebar" id="appSidebar">
+            <div class="brand py-3 px-3 d-flex align-items-center">
+                <a class="brand-link d-flex align-items-center text-decoration-none" asp-area="" asp-controller="Home" asp-action="Index">
+                    <div class="brand-mark" aria-hidden="true">
+                        <!-- simple SVG logo -->
+                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                            <rect x="1" y="1" width="22" height="22" rx="6" fill="url(#g1)" />
+                            <defs>
+                                <linearGradient id="g1" x1="0" x2="1">
+                                    <stop offset="0%" stop-color="#1E3A8A" />
+                                    <stop offset="100%" stop-color="#6D28D9" />
+                                </linearGradient>
+                            </defs>
+                        </svg>
+                    </div>
+                    <div class="ms-2 brand-text">
+                        <div class="h6 mb-0 text-white">ExpenseTracker</div>
+                        <small class="text-muted">Finance</small>
+                    </div>
+                </a>
+            </div>
+
+            <nav class="nav flex-column px-2 py-2 sidebar-nav">
+                <a class="nav-link sidebar-item active" asp-controller="Dashboard" asp-action="Index"><span class="nav-icon">🏠</span> Dashboard</a>
+                <a class="nav-link sidebar-item" asp-controller="Transactions" asp-action="Index"><span class="nav-icon">💳</span> Transactions</a>
+                <a class="nav-link sidebar-item" asp-controller="Categories" asp-action="Index"><span class="nav-icon">📂</span> Categories</a>
+                <a class="nav-link sidebar-item" asp-controller="Dashboard" asp-action="Reports"><span class="nav-icon">📈</span> Reports</a>
+                <a class="nav-link sidebar-item mt-3" asp-controller="Account" asp-action="Manage"><span class="nav-icon">👤</span> Profile</a>
+                <a class="nav-link sidebar-item" asp-controller="Account" asp-action="Settings"><span class="nav-icon">⚙️</span> Settings</a>
+                @if (User?.Identity?.IsAuthenticated ?? false)
+                {
+                    <form asp-controller="Account" asp-action="Logout" method="post" class="px-2 mt-3">
+                        <button type="submit" class="btn btn-ghost w-100">Logout</button>
+                    </form>
+                }
+            </nav>
+        </aside>
+
+        <div class="app-main">
+            <header class="app-topbar d-flex align-items-center justify-content-between px-3">
+                <div class="d-flex align-items-center">
+                    <button class="btn btn-ghost d-md-none me-2" id="sidebarToggle" aria-label="Toggle navigation">☰</button>
+                    <form class="search-form d-none d-sm-flex align-items-center" role="search" method="get" action="/Transactions">
+                        <input name="q" class="form-control form-control-search" placeholder="Search transactions or categories" aria-label="Search" />
+                        <button class="btn btn-search" type="submit" aria-label="Search">🔍</button>
+                    </form>
+                </div>
+
+                <div class="d-flex align-items-center">
+                    <button class="btn btn-icon me-2" title="Notifications" aria-label="Notifications">🔔</button>
+                    @if (User?.Identity?.IsAuthenticated ?? false)
+                    {
+                        <div class="dropdown">
+                            <a class="d-flex align-items-center text-decoration-none dropdown-toggle" href="#" id="userMenu" data-bs-toggle="dropdown" aria-expanded="false">
+                                <div class="avatar rounded-circle bg-secondary me-2"></div>
+                                <div class="text-end">
+                                    <div class="fw-bold text-white">@User.Identity.Name</div>
+                                    <small class="text-muted">Account</small>
+                                </div>
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userMenu">
+                                <li><a class="dropdown-item" asp-controller="Account" asp-action="Manage">Profile</a></li>
+                                <li><a class="dropdown-item" asp-controller="Account" asp-action="Settings">Settings</a></li>
+                                <li><hr class="dropdown-divider" /></li>
+                                <li>
+                                    <form asp-controller="Account" asp-action="Logout" method="post" class="px-3 py-1">
+                                        <button type="submit" class="btn btn-link w-100 text-start">Logout</button>
+                                    </form>
+                                </li>
+                            </ul>
+                        </div>
+                    }
+                    else
+                    {
+                        <a class="btn btn-primary" asp-controller="Account" asp-action="Login">Login</a>
+                    }
+                </div>
+            </header>
+
+            <main role="main" class="app-content p-4">
+                @RenderBody()
+            </main>
+        </div>
+    </div>
+
+    <footer class="border-top footer text-muted">
+        <div class="container">
+            &copy; 2026 - ExpenseTracker - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+        </div>
+    </footer>
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

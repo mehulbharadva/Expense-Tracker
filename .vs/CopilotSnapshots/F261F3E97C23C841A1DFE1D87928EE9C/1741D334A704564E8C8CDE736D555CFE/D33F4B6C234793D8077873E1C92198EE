@@ -1,0 +1,33 @@
+﻿using ExpenseTracker.Data;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+
+namespace ExpenseTracker.Controllers
+{
+    public class DashboardController : Controller
+    {
+        private readonly ApplicationDbContext _db;
+
+        public DashboardController(ApplicationDbContext db)
+        {
+            _db = db;
+        }
+
+        public async Task<IActionResult> Index()
+        {
+            // Basic dashboard data: totals and recent transactions
+            var totalIncome = await _db.Transactions.Where(t => t.Type == Models.TransactionType.Income).SumAsync(t => (decimal?)t.Amount) ?? 0m;
+            var totalExpense = await _db.Transactions.Where(t => t.Type == Models.TransactionType.Expense).SumAsync(t => (decimal?)t.Amount) ?? 0m;
+            var balance = totalIncome - totalExpense;
+
+            var recent = await _db.Transactions.Include(t => t.Category).OrderByDescending(t => t.TransactionDate).Take(5).ToListAsync();
+
+            ViewData["TotalIncome"] = totalIncome;
+            ViewData["TotalExpense"] = totalExpense;
+            ViewData["Balance"] = balance;
+            ViewData["RecentTransactions"] = recent;
+
+            return View();
+        }
+    }
+}

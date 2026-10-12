@@ -1,0 +1,67 @@
+@model IEnumerable<ExpenseTracker.Models.Category>
+@{
+    ViewData["Title"] = "Categories";
+}
+
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-2 flex-wrap gap-3">
+        <div>
+            <h1 class="page-title">Categories</h1>
+            <div class="title-gold-bar"></div>
+        </div>
+        <div>
+            <a class="btn-primary-theme" href="/Categories/Create">+ Add Category</a>
+        </div>
+    </div>
+
+    <div class="table-card">
+        <table class="table-custom">
+            <thead>
+                <tr>
+                    <th>Category Name</th>
+                    <th>Type</th>
+                    <th>Account</th>
+                    <th>Default</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model != null && Model.Any())
+                {
+                    @foreach (var c in Model)
+                    {
+                        <tr>
+                            <td class="fw-semibold">@c.Name</td>
+                            <td>
+                                <span class="badge-cat-pill" style="@(c.Type == ExpenseTracker.Models.TransactionType.Income ? "background: #DCEDE3; color: #164E3A;" : "background: #FAEAEE; color: #6E2237;")">
+                                    @c.Type
+                                </span>
+                            </td>
+                            <td>@c.AccountType</td>
+                            <td>@(c.IsDefault ? "Yes" : "Custom")</td>
+                            <td class="text-end">
+                                @if (!c.IsDefault)
+                                {
+                                    <a class="btn-edit-theme" href="/Categories/Edit/@c.Id">Edit</a>
+                                    <a class="btn-danger-theme" href="/Categories/Delete/@c.Id">Delete</a>
+                                }
+                                else
+                                {
+                                    <span style="color: var(--text-muted); font-size: 0.85rem;">System Default</span>
+                                }
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="5" class="text-center py-4" style="color: var(--text-muted);">
+                            No categories found. Click "+ Add Category" to create one.
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

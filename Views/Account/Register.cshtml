@@ -1,0 +1,48 @@
+@model ExpenseTracker.Models.RegisterViewModel
+@{
+    ViewData["Title"] = "Register";
+}
+
+<div class="container" style="max-width: 480px; margin-top: 30px;">
+    <div class="theme-card" style="padding: 36px 32px;">
+        <h1 class="page-title text-center" style="font-size: 2.1rem; margin-top: 0;">Create Account</h1>
+        <div class="title-gold-bar mx-auto" style="margin-bottom: 24px;"></div>
+        <p class="text-center" style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 28px;">
+            Join ExpenseTracker to easily manage your finances.
+        </p>
+
+        <form asp-action="Register" method="post">
+            <div class="mb-3">
+                <label asp-for="UserName" class="form-label" style="font-weight: 500; color: #4A453E; font-size: 0.9rem;">Username</label>
+                <input asp-for="UserName" class="form-control-theme" placeholder="yourusername" />
+                <span asp-validation-for="UserName" class="text-danger" style="font-size: 0.8rem;"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Email" class="form-label" style="font-weight: 500; color: #4A453E; font-size: 0.9rem;">Email Address</label>
+                <input asp-for="Email" class="form-control-theme" placeholder="name@example.com" />
+                <span asp-validation-for="Email" class="text-danger" style="font-size: 0.8rem;"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Password" class="form-label" style="font-weight: 500; color: #4A453E; font-size: 0.9rem;">Password</label>
+                <input asp-for="Password" class="form-control-theme" type="password" placeholder="••••••••" />
+                <span asp-validation-for="Password" class="text-danger" style="font-size: 0.8rem;"></span>
+            </div>
+
+            <div class="mb-4">
+                <label asp-for="ConfirmPassword" class="form-label" style="font-weight: 500; color: #4A453E; font-size: 0.9rem;">Confirm Password</label>
+                <input asp-for="ConfirmPassword" class="form-control-theme" type="password" placeholder="••••••••" />
+                <span asp-validation-for="ConfirmPassword" class="text-danger" style="font-size: 0.8rem;"></span>
+            </div>
+
+            <div class="d-grid gap-2">
+                <button type="submit" class="btn-primary-theme" style="padding: 10px; font-size: 1rem;">Register</button>
+            </div>
+
+            <div class="text-center mt-4" style="font-size: 0.9rem; color: var(--text-muted);">
+                Already have an account? <a asp-action="Login" style="color: var(--primary-green); font-weight: 600; text-decoration: underline;">Login here</a>
+            </div>
+        </form>
+    </div>
+</div>

@@ -1,0 +1,96 @@
+﻿@model ExpenseTracker.Models.Transaction
+@{
+    ViewData["Title"] = "Edit Transaction";
+    var categories = ViewData["Categories"] as IEnumerable<ExpenseTracker.Models.Category>;
+}
+
+<div class="container mt-4">
+    <h2>Edit Transaction</h2>
+    <form asp-action="Edit" method="post">
+        <input type="hidden" asp-for="Id" />
+        <div class="row">
+            <div class="col-md-4 mb-3">
+                <label asp-for="Type" class="form-label">Transaction Type</label>
+                <select asp-for="Type" class="form-select" id="txType">
+                    <option value="1">Income</option>
+                    <option value="2">Expense</option>
+                </select>
+            </div>
+
+            <div class="col-md-4 mb-3">
+                <label asp-for="AccountType" class="form-label">Account</label>
+                <select asp-for="AccountType" class="form-select" id="accountType">
+                    <option value="1">Personal</option>
+                    <option value="2">Business</option>
+                </select>
+            </div>
+
+            <div class="col-md-4 mb-3">
+                <label asp-for="TransactionDate" class="form-label">Date</label>
+                <input asp-for="TransactionDate" class="form-control" type="date" />
+                <span asp-validation-for="TransactionDate" class="text-danger"></span>
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="CategoryId" class="form-label">Category</label>
+            <select asp-for="CategoryId" class="form-select" id="categorySelect">
+                @foreach (var c in categories)
+                {
+                    <option value="@c.Id" data-type="@( (int)c.Type )" data-account="@( (int)c.AccountType )" @(c.Id == Model.CategoryId ? "selected" : "")>@c.Name (@c.AccountType - @c.Type)</option>
+                }
+            </select>
+            <span asp-validation-for="CategoryId" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Amount" class="form-label">Amount</label>
+            <input asp-for="Amount" class="form-control" />
+            <span asp-validation-for="Amount" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Description" class="form-label">Description</label>
+            <textarea asp-for="Description" class="form-control"></textarea>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Save</button>
+        <a class="btn btn-secondary" href="/Transactions">Cancel</a>
+    </form>
+</div>
+
+<script>
+    (function(){
+        function filterCategories(){
+            var type = document.getElementById('txType').value;
+            var account = document.getElementById('accountType').value;
+            var select = document.getElementById('categorySelect');
+            for (var i=0;i<select.options.length;i++){
+                var opt = select.options[i];
+                var otype = opt.getAttribute('data-type');
+                var oacct = opt.getAttribute('data-account');
+                if (otype === type && oacct === account){
+                    opt.style.display = '';
+                } else {
+                    opt.style.display = 'none';
+                }
+            }
+            // keep current selection if visible, otherwise select first visible
+            var foundSelected = false;
+            for (var j=0;j<select.options.length;j++){
+                if (select.options[j].selected && select.options[j].style.display !== 'none') { foundSelected = true; break; }
+            }
+            if (!foundSelected){
+                for (var j=0;j<select.options.length;j++){
+                    if (select.options[j].style.display !== 'none'){
+                        select.selectedIndex = j; break;
+                    }
+                }
+            }
+        }
+        document.getElementById('txType').addEventListener('change', filterCategories);
+        document.getElementById('accountType').addEventListener('change', filterCategories);
+        // initial filter
+        filterCategories();
+    })();
+</script>

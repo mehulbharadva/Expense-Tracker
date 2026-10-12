@@ -1,0 +1,38 @@
+﻿using ExpenseTracker.Data;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+
+namespace ExpenseTracker.Controllers
+{
+    [Authorize]
+    public class DashboardController : Controller
+    {
+        private readonly ApplicationDbContext _db;
+
+        public DashboardController(ApplicationDbContext db)
+        {
+            _db = db;
+        }
+
+        public async Task<IActionResult> Index(int? account)
+        {
+            var userId = User.FindFirstValue(System.Security.Claims.ClaimTypes.NameIdentifier);
+            var acc = account.HasValue ? (AccountType)account.Value : AccountType.Personal;
+
+            var totalIncome = await _db.Transactions.Where(t => t.UserId == userId && t.Type == Models.TransactionType.Income && t.AccountType == acc).SumAsync(t => (decimal?)t.Amount) ?? 0m;
+            var totalExpense = await _db.Transactions.Where(t => t.UserId == userId && t.Type == Models.TransactionType.Expense && t.AccountType == acc).SumAsync(t => (decimal?)t.Amount) ?? 0m;
+            var balance = totalIncome - totalExpense;
+
+            var recent = await _db.Transactions.Include(t => t.Category).Where(t => t.UserId == userId && t.AccountType == acc).OrderByDescending(t => t.TransactionDate).Take(5).ToListAsync();
+
+            ViewData["TotalIncome"] = totalIncome;
+            ViewData["TotalExpense"] = totalExpense;
+            ViewData["Balance"] = balance;
+            ViewData["RecentTransactions"] = recent;
+            ViewData["SelectedAccount"] = acc;
+
+            return View();
+        }
+    }
+}
