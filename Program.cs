@@ -37,6 +37,16 @@ if (!string.IsNullOrEmpty(connectionString))
 
 var app = builder.Build();
 
+// Automatically apply EF Core migrations and create all database tables on startup
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetService<ApplicationDbContext>();
+    if (db != null)
+    {
+        db.Database.Migrate();
+    }
+}
+
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
@@ -56,6 +66,5 @@ app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}")
     .WithStaticAssets();
-
 
 app.Run();
